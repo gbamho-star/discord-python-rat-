@@ -41,9 +41,9 @@ def run_as_admin():
 # CONFIG
 # ============================================================
 
-BOT_TOKEN = "MTUzNjQ0MDEwNjU4NjYwMzU1MA.G4YlXc.aj3FIgRqEAstlca44gfkphRVg4VlH4CMscKLAM"
+BOT_TOKEN = "PUT BOT TOKAN HERE"
 
-GUILD_ID = 1536111555018629212
+GUILD_ID = NOT IMPORTENT BUT PUT CHANEL ID
 
 
 # ============================================================
@@ -98,7 +98,7 @@ async def location(interaction: discord.Interaction):
         )
 
         embed = discord.Embed(
-            title="📍 PC Location",
+            title=" PC Location",
             description=f"**IP:** `{ip}`",
             color=discord.Color.blue()
         )
@@ -1213,91 +1213,6 @@ async def startup(interaction: discord.Interaction):
 
 
 # ============================================================
-# /system
-
-@tree.command(
-    name="system",
-    description="Show this PC's system information"
-)
-async def system(interaction: discord.Interaction):
-    await interaction.response.defer()
-
-    try:
-        import platform
-        import shutil
-        import time
-
-        def collect_system_info():
-            # Keep psutil optional so the rest of the bot still works if it
-            # isn't installed. CPU/RAM values fall back to "Unavailable".
-            try:
-                import psutil
-            except ImportError:
-                psutil = None
-
-            hostname = platform.node() or "Unknown"
-            os_name = f"{platform.system()} {platform.release()}"
-            try:
-                windows_version = platform.win32_ver()[0]
-                if windows_version:
-                    os_name += f" (Build {windows_version})"
-            except Exception:
-                pass
-
-            cpu = platform.processor() or platform.machine() or "Unknown"
-            python_version = platform.python_version()
-
-            if psutil:
-                ram_total = psutil.virtual_memory().total
-                ram_used = psutil.virtual_memory().used
-                ram = f"{ram_used / (1024**3):.1f} / {ram_total / (1024**3):.1f} GB"
-                cpu_usage = f"{psutil.cpu_percent(interval=0.5):.1f}%"
-                uptime_seconds = max(0, time.time() - psutil.boot_time())
-                uptime = str(__import__('datetime').timedelta(seconds=int(uptime_seconds)))
-            else:
-                ram = "Unavailable (install psutil)"
-                cpu_usage = "Unavailable"
-                uptime = "Unavailable"
-
-            disk = shutil.disk_usage(os.path.abspath(os.sep))
-            disk_used = f"{disk.used / (1024**3):.1f} GB"
-            disk_total = f"{disk.total / (1024**3):.1f} GB"
-            disk_text = f"{disk_used} / {disk_total}"
-
-            return hostname, os_name, cpu, cpu_usage, ram, disk_text, uptime, python_version
-
-        (
-            hostname,
-            os_name,
-            cpu,
-            cpu_usage,
-            ram,
-            disk,
-            uptime,
-            python_version,
-        ) = await asyncio.to_thread(collect_system_info)
-
-        embed = discord.Embed(
-            title="🖥️ System Information",
-            color=discord.Color.blue()
-        )
-        embed.add_field(name="PC", value=f"`{hostname}`", inline=False)
-        embed.add_field(name="OS", value=os_name, inline=True)
-        embed.add_field(name="CPU", value=cpu, inline=True)
-        embed.add_field(name="CPU Usage", value=cpu_usage, inline=True)
-        embed.add_field(name="RAM", value=ram, inline=True)
-        embed.add_field(name="Disk", value=disk, inline=True)
-        embed.add_field(name="Uptime", value=uptime, inline=True)
-        embed.add_field(name="Python", value=python_version, inline=True)
-
-        await interaction.followup.send(embed=embed)
-
-    except Exception as e:
-        await interaction.followup.send(
-            f"❌ Couldn't get system information: `{e}`"
-        )
-
-# ============================================================
 # /status
 # ============================================================
 
@@ -1484,12 +1399,6 @@ async def help_command(interaction: discord.Interaction):
     embed.add_field(
         name="/startup",
         value="Add this app to Windows startup.",
-        inline=False
-    )
-
-    embed.add_field(
-        name="/system",
-        value="Show the PC's system information.",
         inline=False
     )
 
